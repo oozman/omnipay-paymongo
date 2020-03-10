@@ -2,7 +2,9 @@
 
 namespace Omnipay\Paymongo\Utils;
 
-class Payment
+use Omnipay\Common\Message\ResponseInterface;
+
+class Payment implements ResponseInterface
 {
     protected $id;
     protected $type;
@@ -45,5 +47,69 @@ class Payment
             'source'      => $this->source,
             'paid_at'     => $this->paidAt,
         ]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getData()
+    {
+        return $this->all();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRequest()
+    {
+        return $this->all();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isSuccessful()
+    {
+        return ! empty($this->id);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isRedirect()
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isCancelled()
+    {
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMessage()
+    {
+        return \GuzzleHttp\json_encode($this->all());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getCode()
+    {
+        return 200;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTransactionReference()
+    {
+        return $this->id;
     }
 }

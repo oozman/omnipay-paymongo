@@ -12,7 +12,7 @@ composer require omarusman/omnipay-paymongo
 
 ### Credit or Debit Card
 
-To start processing with Paymongo's Credit or Debit Card.
+To start processing payment via Paymongo's Credit or Debit Card.
 
 **1. Make an Omnipay Gateway:**
 ```php
@@ -33,7 +33,7 @@ $token = $gateway->authorize([
     'cvv'         => '123',
 ]);
 ```
-This will return a `Token` where you can use to process a payment.
+This will return a `Token` object which you can use to process a payment.
 
 **3. Process a Payment**
 ```php

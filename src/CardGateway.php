@@ -5,10 +5,12 @@ namespace Omnipay\Paymongo;
 use Exception;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\CreditCard;
+use Omnipay\Common\Message\RequestInterface;
+use Omnipay\Paymongo\Utils\Payment;
 use Omnipay\Paymongo\Utils\Token;
 use Zttp\Zttp;
 
-class Gateway extends AbstractGateway
+class CardGateway extends AbstractGateway
 {
     protected $baseUri = 'https://api.paymongo.com/v1';
     protected $secretKey;
@@ -19,27 +21,19 @@ class Gateway extends AbstractGateway
      */
     public function getName()
     {
-        return 'Paymongo';
+        return 'Paymongo_Card';
     }
 
     /**
      * Set secret key.
      *
-     * @param  string  $key
+     * @param $publicKey
+     * @param $secretKey
      */
-    public function setSecretKey($key = '')
+    public function setKeys($publicKey, $secretKey)
     {
-        $this->secretKey = $key;
-    }
-
-    /**
-     * Set public key.
-     *
-     * @param  string  $key
-     */
-    public function setPublicKey($key = '')
-    {
-        $this->publicKey = $key;
+        $this->publicKey = $publicKey;
+        $this->secretKey = $secretKey;
     }
 
     /**
@@ -49,16 +43,25 @@ class Gateway extends AbstractGateway
      *
      * @return string
      */
-    private function apiUrl($path = '')
+    public function apiUrl($path = '')
     {
         return $this->baseUri.'/'.trim($path, '/');
     }
 
+    /**
+     * Authorize a credit or debit card.
+     * Generates a Paymongo token.
+     *
+     * @param  array  $options
+     *
+     * @return RequestInterface|Token
+     * @throws Exception
+     */
     public function authorize(array $options)
     {
         $card = new CreditCard($options);
 
-        $response = Zttp::withBasicAuth($this->secretKey, '')
+        $response = Zttp::withBasicAuth($this->publicKey, '')
             ->post($this->apiUrl('/tokens'), [
                 'data' => [
                     'attributes' => [
@@ -79,6 +82,15 @@ class Gateway extends AbstractGateway
         return new Token($data['id'], $data['type']);
     }
 
+    /**
+     * Start a purchase.
+     * This will create a new Paymongo payment.
+     *
+     * @param  array  $options
+     *
+     * @return Payment
+     * @throws Exception
+     */
     public function purchase(array $options)
     {
         $options = collect($options);
@@ -90,7 +102,7 @@ class Gateway extends AbstractGateway
             ->post($this->apiUrl('/payments'), [
                 'data' => [
                     'attributes' => [
-                        'amount'               => $options->get('amount'),
+                        'amount'               => $this->convertAmountToCents($options->get('amount')),
                         'currency'             => $options->get('currency'),
                         'description'          => $options->get('description'),
                         'statement_descriptor' => $options->get('statement_descriptor'),
@@ -106,6 +118,23 @@ class Gateway extends AbstractGateway
             throw new Exception($response->body());
         }
 
-        return $response->json()['data'];
+        return new Payment($response->json()['data']);
+    }
+
+    /**
+     * Convert amount to cents.
+     *
+     * @param $amount
+     *
+     * @return float|int
+     * @throws Exception
+     */
+    public function convertAmountToCents($amount)
+    {
+        if (! is_numeric($amount)) {
+            throw new Exception('Please make sure your amount is a number.');
+        }
+
+        return number_format($amount, 2) * 100;
     }
 }

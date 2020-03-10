@@ -1,6 +1,7 @@
 {
     "name": "omarusman/omnipay-paymongo",
     "description": "A Paymongo driver for Omnipay PHP payment processing library",
+    "version": "1.0.0",
     "type": "library",
     "authors": [
         {

@@ -17,5 +17,9 @@
         "psr-4": {
             "Omnipay\\Paymongo\\": "src/"
         }
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.3",
+        "phpunit/phpunit": "^9"
     }
 }

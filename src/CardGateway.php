@@ -6,6 +6,7 @@ use Exception;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\CreditCard;
 use Omnipay\Common\Message\RequestInterface;
+use Omnipay\Common\Message\ResponseInterface;
 use Omnipay\Paymongo\Utils\Payment;
 use Omnipay\Paymongo\Utils\Token;
 use Zttp\Zttp;
@@ -88,7 +89,7 @@ class CardGateway extends AbstractGateway
      *
      * @param  array  $options
      *
-     * @return Payment
+     * @return ResponseInterface
      * @throws Exception
      */
     public function purchase(array $options)
